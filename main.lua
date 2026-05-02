@@ -1,4 +1,4 @@
--- [[ klưn.z MASTER SYSTEM - FULL VERSION + MAX HITBOX + KILL LEADERBOARD ]] --
+-- [[ klưn.z MASTER SYSTEM - FULL VERSION + FIXED STATUS POSITION ]] --
 local p = game:GetService("Players").LocalPlayer
 local RS = game:GetService("RunService")
 local SG = game:GetService("StarterGui")
@@ -20,9 +20,41 @@ local activeCombat2, activeHitbox = false, false
 -- [[ THÔNG BÁO KHỞI TẠO ]] --
 SG:SetCore("SendNotification", {
     Title = "★ klưn.z FULL SYSTEM ★",
-    Text = "BY klunz.mFLie! | KILLS ADDED 🗿",
+    Text = "BY klunz.mFLie! | STATUS FIXED 🗿",
     Duration = 10
 })
+
+-- ==========================================
+-- ||      THANH STATUS (GÓC TRÁI)         ||
+-- ==========================================
+local statusGui = Instance.new("ScreenGui", p:WaitForChild("PlayerGui"))
+statusGui.Name = "klunz_Status_Global"; statusGui.ResetOnSpawn = false
+
+local sFrame = Instance.new("Frame", statusGui)
+sFrame.Size = UDim2.new(0, 160, 0, 50)
+sFrame.Position = UDim2.new(0, 20, 0.25, 0) -- Vị trí góc trái chỗ ông khoanh đỏ
+sFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+sFrame.BackgroundTransparency = 0.5
+sFrame.BorderSizePixel = 0
+Instance.new("UICorner", sFrame)
+
+local sKill = Instance.new("TextLabel", sFrame)
+sKill.Size = UDim2.new(1, 0, 0.5, 0)
+sKill.Text = "KILLS: " .. killsStat.Value
+sKill.TextColor3 = Color3.fromRGB(255, 255, 255)
+sKill.Font = Enum.Font.Code; sKill.TextSize = 16
+sKill.BackgroundTransparency = 1
+
+local sInfo = Instance.new("TextLabel", sFrame)
+sInfo.Size = UDim2.new(1, 0, 0.5, 0)
+sInfo.Position = UDim2.new(0, 0, 0.5, 0)
+sInfo.Text = "STATUS: IDLE"
+sInfo.TextColor3 = Color3.fromRGB(0, 255, 150)
+sInfo.Font = Enum.Font.Code; sInfo.TextSize = 12
+sInfo.BackgroundTransparency = 1
+
+-- Cập nhật số kill khi thay đổi
+killsStat.Changed:Connect(function(val) sKill.Text = "KILLS: " .. val end)
 
 -- ==========================================
 -- ||      MENU 1 (BẢN V6 + MAX HITBOX)    ||
@@ -82,7 +114,7 @@ statusLabel1.Font, statusLabel1.TextSize, statusLabel1.BackgroundTransparency = 
 hpInput1.FocusLost:Connect(function()
     local val = tonumber(hpInput1.Text:match("%d+"))
     if val then 
-        CONFIG1.EscapeHP = math.clamp(val, 1, 100) -- Giới hạn 1-100
+        CONFIG1.EscapeHP = math.clamp(val, 1, 100)
         hpInput1.Text = "Set Escape HP: " .. CONFIG1.EscapeHP
     else
         hpInput1.Text = "Set Escape HP: " .. CONFIG1.EscapeHP
@@ -92,7 +124,7 @@ end)
 targetInput1.FocusLost:Connect(function()
     local val = tonumber(targetInput1.Text:match("%d+"))
     if val then 
-        CONFIG1.TargetHP = math.clamp(val, 1, 100) -- Giới hạn 1-100
+        CONFIG1.TargetHP = math.clamp(val, 1, 100)
         targetInput1.Text = "Set Target HP: " .. CONFIG1.TargetHP
     else
         targetInput1.Text = "Set Target HP: " .. CONFIG1.TargetHP
@@ -115,8 +147,7 @@ task.spawn(function()
                 if v ~= p and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
                     local hrp = v.Character.HumanoidRootPart
                     hrp.Size = Vector3.new(CONFIG1.MaxHitbox, CONFIG1.MaxHitbox, CONFIG1.MaxHitbox)
-                    hrp.Transparency = 0.8
-                    hrp.CanCollide = false
+                    hrp.Transparency = 0.8; hrp.CanCollide = false
                 end
             end
         else
@@ -173,7 +204,6 @@ end
 -- ||      HỆ THỐNG CORE & KILL TRACK      ||
 -- ==========================================
 local deadEnemies = {}
-
 local function applyTargetESP()
     for _, enemy in pairs(game.Players:GetPlayers()) do
         if enemy ~= p and enemy.Character then
@@ -181,21 +211,15 @@ local function applyTargetESP()
             local eHead = enemy.Character:FindFirstChild("Head")
             if eHum and eHead then
                 local enemyHPPercent = math.floor((eHum.Health / eHum.MaxHealth) * 100)
-                
-                -- LOGIC ĐẾM KILL
                 if eHum.Health <= 0 then
-                    -- Nếu địch chết và đang bị đánh dấu ESP
                     if not deadEnemies[enemy] and enemy.Character:FindFirstChild("klunz_Xray") then
                         deadEnemies[enemy] = true
                         killsStat.Value = killsStat.Value + 1
                     end
-                    -- Xóa ESP khi chết
                     if enemy.Character:FindFirstChild("klunz_Xray") then enemy.Character.klunz_Xray.Enabled = false end
                     if eHead:FindFirstChild("klunz_HP_Tag") then eHead.klunz_HP_Tag:Destroy() end
                 else
-                    deadEnemies[enemy] = false -- Reset khi địch hồi sinh
-                    
-                    -- CHUẨN HÓA % MÁU THEO CONFIG TỪ 1 ĐẾN 100
+                    deadEnemies[enemy] = false 
                     if enemyHPPercent > 0 and enemyHPPercent <= CONFIG1.TargetHP then
                         local hl = enemy.Character:FindFirstChild("klunz_Xray") or Instance.new("Highlight", enemy.Character)
                         hl.Name = "klunz_Xray"; hl.FillColor = Color3.fromRGB(255, 0, 0); hl.FillTransparency = 0.4; hl.Enabled = true
@@ -284,8 +308,16 @@ RS.Heartbeat:Connect(function()
     if not (root and hum) then return end
     applyTargetESP(); hum.WalkSpeed = CONFIG1.Speed
     local myHP = math.floor((hum.Health / hum.MaxHealth) * 100)
+    
+    -- XỬ LÝ STATUS INFO (Góc trái)
     if activeEscape1 and myHP <= CONFIG1.EscapeHP then systemLock1 = true elseif myHP >= CONFIG1.SafeHP then systemLock1 = false end
-    if systemLock1 then root.CFrame = CFrame.new(root.Position.X, 1000, root.Position.Z); root.Velocity = Vector3.zero; statusLabel1.Text = "STATUS: SKY ESCAPE"; return end
+    if systemLock1 then 
+        root.CFrame = CFrame.new(root.Position.X, 1000, root.Position.Z); root.Velocity = Vector3.zero
+        statusLabel1.Text = "STATUS: SKY ESCAPE"
+        sInfo.Text = "STATUS: SKY ESCAPE"; sInfo.TextColor3 = Color3.fromRGB(255, 0, 0)
+        return 
+    end
+
     local target = nil
     if activeCombat2 and CONFIG2.SelectedTarget and CONFIG2.SelectedTarget.Character then
         local tHum = CONFIG2.SelectedTarget.Character:FindFirstChild("Humanoid")
@@ -299,13 +331,17 @@ RS.Heartbeat:Connect(function()
             end
         end
     end
+
     if target and (activeCombat1 or activeCombat2) then
         root.CFrame = target.CFrame * CFrame.new(0, 0, 2.8)
         root.CFrame = CFrame.lookAt(root.Position, target.Position)
         Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Position + Vector3.new(0, 1, 0))
         statusLabel1.Text = "TARGETING: " .. target.Parent.Name
+        sInfo.Text = "KILLING: " .. target.Parent.Name; sInfo.TextColor3 = Color3.fromRGB(255, 100, 0)
     else
         statusLabel1.Text = (activeCombat1 or activeCombat2) and "STATUS: SEARCHING..." or "STATUS: IDLE"
+        sInfo.Text = (activeCombat1 or activeCombat2) and "STATUS: SEARCHING..." or "STATUS: IDLE"
+        sInfo.TextColor3 = Color3.fromRGB(0, 255, 150)
     end
 end)
 
