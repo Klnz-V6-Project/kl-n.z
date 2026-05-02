@@ -1,3 +1,4 @@
+-- [[ klưn.z MASTER SYSTEM - RE-FIXED ]] --
 local p = game:GetService("Players").LocalPlayer
 local RS = game:GetService("RunService")
 local SG = game:GetService("StarterGui")
@@ -10,15 +11,15 @@ local CONFIG2 = { SelectedTarget = nil }
 local activeInvis1, activeCombat1, activeEscape1, systemLock1 = false, false, true, false
 local activeCombat2 = false
 
--- [[ THÔNG BÁO ]] --
+-- [[ THÔNG BÁO KHỞI TẠO ]] --
 SG:SetCore("SendNotification", {
-    Title = "★ klưn.z DOUBLE SYSTEM ★",
-    Text = "FIXED: MENU 2 LIST VISIBLE! 🗿",
-    Duration = 5
+    Title = "★ klưn.z DOUBLE SYSTEM ★",
+    Text = "LINK GITHUB ĐÃ KẾT NỐI! 🗿",
+    Duration = 5
 })
 
 -- ==========================================
--- ||      MENU 1 (BẢN V6 CHÍNH CHỦ)       ||
+-- ||      MENU 1 (BẢN V6 CHÍNH CHỦ)       ||
 -- ==========================================
 local gui1 = Instance.new("ScreenGui", p:WaitForChild("PlayerGui"))
 gui1.Name = "klunz_Master_V6"; gui1.ResetOnSpawn = false 
@@ -43,10 +44,10 @@ content1.Size, content1.Position, content1.BackgroundTransparency = UDim2.new(1,
 content1.ZIndex = 5
 
 local function createBtn1(text, pos, color)
-    local b = Instance.new("TextButton", content1)
-    b.Size, b.Position = UDim2.new(0.9,0,0.08,0), pos
-    b.Text, b.BackgroundColor3, b.TextColor3, b.Font = text, color, Color3.new(1,1,1), Enum.Font.Code
-    b.TextSize, b.ZIndex = 12, 10; Instance.new("UICorner", b); return b
+    local b = Instance.new("TextButton", content1)
+    b.Size, b.Position = UDim2.new(0.9,0,0.08,0), pos
+    b.Text, b.BackgroundColor3, b.TextColor3, b.Font = text, color, Color3.new(1,1,1), Enum.Font.Code
+    b.TextSize, b.ZIndex = 12, 10; Instance.new("UICorner", b); return b
 end
 
 local invBtn1 = createBtn1("INVIS/HIDE NAME: OFF", UDim2.new(0.05,0,0.02,0), Color3.fromRGB(200,40,40))
@@ -70,7 +71,7 @@ statusLabel1.Text, statusLabel1.TextColor3 = "STATUS: IDLE", Color3.new(0.7,0.7,
 statusLabel1.Font, statusLabel1.TextSize, statusLabel1.BackgroundTransparency = Enum.Font.Code, 11, 1
 
 -- ==========================================
--- ||      MENU 2 (FIXED: HIỆN DANH SÁCH)   ||
+-- ||      MENU 2 (TARGET SYSTEM)          ||
 -- ==========================================
 local gui2 = Instance.new("ScreenGui", p:WaitForChild("PlayerGui"))
 gui2.Name = "klunz_Aimbot_Killer"; gui2.ResetOnSpawn = false
@@ -78,7 +79,6 @@ gui2.Name = "klunz_Aimbot_Killer"; gui2.ResetOnSpawn = false
 local main2 = Instance.new("Frame", gui2)
 main2.Size, main2.Position = UDim2.new(0, 180, 0, 110), UDim2.new(1, -190, 0.3, 0)
 main2.BackgroundColor3 = Color3.fromRGB(15, 15, 15); main2.Active, main2.Draggable = true, true
--- Tắt ClipsDescendants để thấy bảng danh sách bên ngoài
 main2.ClipsDescendants = false; Instance.new("UICorner", main2)
 
 local topBar2 = Instance.new("Frame", main2)
@@ -110,7 +110,6 @@ resetBtn2.Size, resetBtn2.Position = UDim2.new(0.9, 0, 0, 25), UDim2.new(0.05, 0
 resetBtn2.Text = "[ RESET SCAN ]"; resetBtn2.BackgroundColor3 = Color3.fromRGB(80, 20, 20)
 resetBtn2.TextColor3, resetBtn2.Font, resetBtn2.TextSize = Color3.new(1, 1, 1), Enum.Font.Code, 9; Instance.new("UICorner", resetBtn2)
 
--- Bảng danh sách đặt bên Trái (-160)
 local listFrame2 = Instance.new("Frame", main2)
 listFrame2.Size, listFrame2.Position = UDim2.new(0, 150, 0, 200), UDim2.new(0, -160, 0, 0)
 listFrame2.BackgroundColor3 = Color3.fromRGB(10, 10, 10); listFrame2.Visible = false; Instance.new("UICorner", listFrame2)
@@ -120,130 +119,127 @@ scroll2.Size, scroll2.Position = UDim2.new(0.9, 0, 0.9, 0), UDim2.new(0.05, 0, 0
 scroll2.BackgroundColor3, scroll2.ScrollBarThickness = Color3.fromRGB(15, 15, 15), 1; Instance.new("UIListLayout", scroll2)
 
 function updateList2()
-    for _, v in pairs(scroll2:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
-    for _, pl in pairs(game.Players:GetPlayers()) do
-        if pl ~= p then
-            local b = Instance.new("TextButton", scroll2)
-            b.Size, b.Text = UDim2.new(1, 0, 0, 22), " " .. pl.Name
-            b.BackgroundColor3 = (CONFIG2.SelectedTarget == pl) and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(25, 25, 25)
-            b.TextColor3, b.Font, b.TextSize = Color3.new(1, 1, 1), Enum.Font.Code, 8
-            b.TextXAlignment = Enum.TextXAlignment.Left; Instance.new("UICorner", b)
-            b.MouseButton1Click:Connect(function() CONFIG2.SelectedTarget = (CONFIG2.SelectedTarget == pl) and nil or pl updateList2() end)
-        end
-    end
+    for _, v in pairs(scroll2:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
+    for _, pl in pairs(game.Players:GetPlayers()) do
+        if pl ~= p then
+            local b = Instance.new("TextButton", scroll2)
+            b.Size, b.Text = UDim2.new(1, 0, 0, 22), " " .. pl.Name
+            b.BackgroundColor3 = (CONFIG2.SelectedTarget == pl) and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(25, 25, 25)
+            b.TextColor3, b.Font, b.TextSize = Color3.new(1, 1, 1), Enum.Font.Code, 8
+            b.TextXAlignment = Enum.TextXAlignment.Left; Instance.new("UICorner", b)
+            b.MouseButton1Click:Connect(function() 
+                CONFIG2.SelectedTarget = (CONFIG2.SelectedTarget == pl) and nil or pl 
+                updateList2() 
+            end)
+        end
+    end
 end
 
--- [[ LOGIC NÚT BẤM CHUNG ]] --
+-- [[ LOGIC NÚT BẤM ]] --
 toggleBtn1.MouseButton1Click:Connect(function()
-    local isCol = (toggleBtn1.Text == "-")
-    frame1:TweenSize(isCol and UDim2.new(0,210,0,35) or UDim2.new(0,210,0,420), "Out", "Quart", 0.3, true)
-    content1.Visible = not isCol; toggleBtn1.Text = isCol and "+" or "-"
+    local isCol = (toggleBtn1.Text == "-")
+    frame1:TweenSize(isCol and UDim2.new(0,210,0,35) or UDim2.new(0,210,0,420), "Out", "Quart", 0.3, true)
+    content1.Visible = not isCol; toggleBtn1.Text = isCol and "+" or "-"
 end)
 
 toggleBtn2.MouseButton1Click:Connect(function()
-    local isCol = (toggleBtn2.Text == "-")
-    -- Khi thu gọn thì ẩn luôn list để tránh bị treo lơ lửng
-    if isCol then listFrame2.Visible = false; listToggle2.Text = ">" end
-    main2:TweenSize(isCol and UDim2.new(0, 180, 0, 30) or UDim2.new(0, 180, 0, 110), "Out", "Quart", 0.3, true)
-    content2.Visible = not isCol; toggleBtn2.Text = isCol and "+" or "-"
+    local isCol = (toggleBtn2.Text == "-")
+    if isCol then listFrame2.Visible = false; listToggle2.Text = ">" end
+    main2:TweenSize(isCol and UDim2.new(0, 180, 0, 30) or UDim2.new(0, 180, 0, 110), "Out", "Quart", 0.3, true)
+    content2.Visible = not isCol; toggleBtn2.Text = isCol and "+" or "-"
 end)
 
 listToggle2.MouseButton1Click:Connect(function()
-    listFrame2.Visible = not listFrame2.Visible
-    listToggle2.Text = listFrame2.Visible and "<" or ">"
-    if listFrame2.Visible then updateList2() end
+    listFrame2.Visible = not listFrame2.Visible
+    listToggle2.Text = listFrame2.Visible and "<" or ">"
+    if listFrame2.Visible then updateList2() end
 end)
 
 combatBtn1.MouseButton1Click:Connect(function() 
-    activeCombat1 = not activeCombat1
-    combatBtn1.Text = activeCombat1 and "AUTO KILL + AIM: ON" or "AUTO KILL + AIM: OFF"
-    combatBtn1.BackgroundColor3 = activeCombat1 and Color3.fromRGB(138,43,226) or Color3.fromRGB(80,80,80)
+    activeCombat1 = not activeCombat1
+    combatBtn1.Text = activeCombat1 and "AUTO KILL + AIM: ON" or "AUTO KILL + AIM: OFF"
+    combatBtn1.BackgroundColor3 = activeCombat1 and Color3.fromRGB(138,43,226) or Color3.fromRGB(80,80,80)
 end)
 
 combatBtn2.MouseButton1Click:Connect(function()
-    activeCombat2 = not activeCombat2
-    combatBtn2.Text = activeCombat2 and "AIM & KILL: ON" or "AIM & KILL: OFF"
-    combatBtn2.BackgroundColor3 = activeCombat2 and Color3.fromRGB(200, 0, 0) or Color3.fromRGB(35, 35, 35)
+    activeCombat2 = not activeCombat2
+    combatBtn2.Text = activeCombat2 and "AIM & KILL: ON" or "AIM & KILL: OFF"
+    combatBtn2.BackgroundColor3 = activeCombat2 and Color3.fromRGB(200, 0, 0) or Color3.fromRGB(35, 35, 35)
 end)
 
 resetBtn2.MouseButton1Click:Connect(function() CONFIG2.SelectedTarget = nil updateList2() end)
 game.Players.PlayerAdded:Connect(updateList2); game.Players.PlayerRemoving:Connect(updateList2)
 
--- Các chức năng Menu 1 giữ nguyên
 invBtn1.MouseButton1Click:Connect(function() 
-    activeInvis1 = not activeInvis1
-    invBtn1.Text = activeInvis1 and "INVIS: ON" or "INVIS: OFF"
-    invBtn1.BackgroundColor3 = activeInvis1 and Color3.fromRGB(0,255,150) or Color3.fromRGB(200,40,40)
+    activeInvis1 = not activeInvis1
+    invBtn1.Text = activeInvis1 and "INVIS: ON" or "INVIS: OFF"
+    invBtn1.BackgroundColor3 = activeInvis1 and Color3.fromRGB(0,255,150) or Color3.fromRGB(200,40,40)
 end)
 
 escToggle1.MouseButton1Click:Connect(function() 
-    activeEscape1 = not activeEscape1
-    escToggle1.Text = activeEscape1 and "AUTO ESCAPE: ON" or "AUTO ESCAPE: OFF"
-    escToggle1.BackgroundColor3 = activeEscape1 and Color3.fromRGB(0,150,255) or Color3.fromRGB(200,40,40)
-    if not activeEscape1 then systemLock1 = false end
+    activeEscape1 = not activeEscape1
+    escToggle1.Text = activeEscape1 and "AUTO ESCAPE: ON" or "AUTO ESCAPE: OFF"
+    escToggle1.BackgroundColor3 = activeEscape1 and Color3.fromRGB(0,150,255) or Color3.fromRGB(200,40,40)
+    if not activeEscape1 then systemLock1 = false end
 end)
 
 hpInput1.FocusLost:Connect(function()
-    local val = tonumber(hpInput1.Text:match("%d+"))
-    if val then CONFIG1.EscapeHP = val hpInput1.Text = "Set Escape HP: "..val end
+    local val = tonumber(hpInput1.Text:match("%d+"))
+    if val then CONFIG1.EscapeHP = val hpInput1.Text = "Set Escape HP: "..val end
 end)
 
 targetInput1.FocusLost:Connect(function()
-    local val = tonumber(targetInput1.Text:match("%d+"))
-    if val then CONFIG1.TargetHP = val targetInput1.Text = "Set Target HP: "..val end
+    local val = tonumber(targetInput1.Text:match("%d+"))
+    if val then CONFIG1.TargetHP = val targetInput1.Text = "Set Target HP: "..val end
 end)
 
 -- [[ HỆ THỐNG CORE ]] --
 RS.Heartbeat:Connect(function()
-    local char = p.Character; local root = char and char:FindFirstChild("HumanoidRootPart")
-    local hum = char and char:FindFirstChild("Humanoid")
-    if not (root and hum) then return end
+    local char = p.Character; local root = char and char:FindFirstChild("HumanoidRootPart")
+    local hum = char and char:FindFirstChild("Humanoid")
+    if not (root and hum) then return end
 
-    -- Tự động tăng tốc nếu cần
-    hum.WalkSpeed = CONFIG1.Speed
+    hum.WalkSpeed = CONFIG1.Speed
 
-    -- ESCAPE
-    local myHP = math.floor((hum.Health / hum.MaxHealth) * 100)
-    if activeEscape1 and myHP <= CONFIG1.EscapeHP then systemLock1 = true 
-    elseif myHP >= CONFIG1.SafeHP then systemLock1 = false end
+    local myHP = math.floor((hum.Health / hum.MaxHealth) * 100)
+    if activeEscape1 and myHP <= CONFIG1.EscapeHP then systemLock1 = true 
+    elseif myHP >= CONFIG1.SafeHP then systemLock1 = false end
 
-    if systemLock1 then
-        root.CFrame = CFrame.new(root.Position.X, 1000, root.Position.Z); root.Velocity = Vector3.zero
-        statusLabel1.Text = "STATUS: SKY ESCAPE"; return
-    end
+    if systemLock1 then
+        root.CFrame = CFrame.new(root.Position.X, 1000, root.Position.Z); root.Velocity = Vector3.zero
+        statusLabel1.Text = "STATUS: SKY ESCAPE"; return
+    end
 
-    -- Tìm mục tiêu
-    local target = nil
-    if activeCombat2 and CONFIG2.SelectedTarget and CONFIG2.SelectedTarget.Character then
-        local tHum = CONFIG2.SelectedTarget.Character:FindFirstChild("Humanoid")
-        if tHum and tHum.Health > 0 then target = CONFIG2.SelectedTarget.Character:FindFirstChild("HumanoidRootPart") end
-    end
-    
-    if not target and (activeCombat1 or activeCombat2) then
-        for _, v in pairs(game.Players:GetPlayers()) do
-            if v ~= p and v.Character and v.Character:FindFirstChild("Humanoid") then
-                local eHP = math.floor((v.Character.Humanoid.Health / v.Character.Humanoid.MaxHealth) * 100)
-                if eHP > 0 and eHP <= CONFIG1.TargetHP then target = v.Character.HumanoidRootPart; break end
-            end
-        end
-    end
+    local target = nil
+    if activeCombat2 and CONFIG2.SelectedTarget and CONFIG2.SelectedTarget.Character then
+        local tHum = CONFIG2.SelectedTarget.Character:FindFirstChild("Humanoid")
+        if tHum and tHum.Health > 0 then target = CONFIG2.SelectedTarget.Character:FindFirstChild("HumanoidRootPart") end
+    end
+    
+    if not target and (activeCombat1 or activeCombat2) then
+        for _, v in pairs(game.Players:GetPlayers()) do
+            if v ~= p and v.Character and v.Character:FindFirstChild("Humanoid") then
+                local eHP = math.floor((v.Character.Humanoid.Health / v.Character.Humanoid.MaxHealth) * 100)
+                if eHP > 0 and eHP <= CONFIG1.TargetHP then target = v.Character.HumanoidRootPart; break end
+            end
+        end
+    end
 
-    if target and (activeCombat1 or activeCombat2) then
-        root.CFrame = target.CFrame * CFrame.new(0, 0, 2.8)
-        root.CFrame = CFrame.lookAt(root.Position, target.Position)
-        Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Position + Vector3.new(0, 1, 0))
-        statusLabel1.Text = "AIMING: " .. target.Parent.Name
-    else
-        statusLabel1.Text = (activeCombat1 or activeCombat2) and "STATUS: SEARCHING..." or "STATUS: IDLE"
-    end
+    if target and (activeCombat1 or activeCombat2) then
+        root.CFrame = target.CFrame * CFrame.new(0, 0, 2.8)
+        root.CFrame = CFrame.lookAt(root.Position, target.Position)
+        Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Position + Vector3.new(0, 1, 0))
+        statusLabel1.Text = "AIMING: " .. target.Parent.Name
+    else
+        statusLabel1.Text = (activeCombat1 or activeCombat2) and "STATUS: SEARCHING..." or "STATUS: IDLE"
+    end
 end)
 
--- Loop đánh server
 task.spawn(function()
-    while task.wait(0.1) do
-        if (activeCombat1 or activeCombat2) and not systemLock1 then
-            local ev = p.Character and p.Character:FindFirstChild("Communicate")
-            if ev then for i = 1, 4 do ev:FireServer({[1] = i}) end end
-        end
-    end
+    while task.wait(0.1) do
+        if (activeCombat1 or activeCombat2) and not systemLock1 then
+            local ev = p.Character and p.Character:FindFirstChild("Communicate")
+            if ev then for i = 1, 4 do ev:FireServer({[1] = i}) end end
+        end
+    end
 end)
