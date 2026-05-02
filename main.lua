@@ -1,8 +1,14 @@
--- [[ klưn.z MASTER SYSTEM - FULL VERSION + MAX HITBOX ]] --
+-- [[ klưn.z MASTER SYSTEM - FULL VERSION + MAX HITBOX + KILL LEADERBOARD ]] --
 local p = game:GetService("Players").LocalPlayer
 local RS = game:GetService("RunService")
 local SG = game:GetService("StarterGui")
 local Camera = workspace.CurrentCamera
+
+-- [[ HỆ THỐNG LEADERSTATS (KILLS) ]] --
+local leaderstats = p:FindFirstChild("leaderstats") or Instance.new("Folder", p)
+leaderstats.Name = "leaderstats"
+local killsStat = leaderstats:FindFirstChild("Kills") or Instance.new("IntValue", leaderstats)
+killsStat.Name = "Kills"
 
 -- [[ CONFIG HỆ THỐNG TỔNG HỢP ]] --
 local CONFIG1 = { EscapeHP = 25, SafeHP = 75, Speed = 100, TargetHP = 30, MaxHitbox = 20 }
@@ -14,7 +20,7 @@ local activeCombat2, activeHitbox = false, false
 -- [[ THÔNG BÁO KHỞI TẠO ]] --
 SG:SetCore("SendNotification", {
     Title = "★ klưn.z FULL SYSTEM ★",
-    Text = "BY klunz.mFLie! 🗿",
+    Text = "BY klunz.mFLie! | KILLS ADDED 🗿",
     Duration = 10
 })
 
@@ -69,6 +75,29 @@ local statusLabel1 = Instance.new("TextLabel", content1)
 statusLabel1.Size, statusLabel1.Position = UDim2.new(1,0,0.07,0), UDim2.new(0,0,0.88,0)
 statusLabel1.Text, statusLabel1.TextColor3 = "STATUS: IDLE", Color3.new(0.7,0.7,0.7)
 statusLabel1.Font, statusLabel1.TextSize, statusLabel1.BackgroundTransparency = Enum.Font.Code, 11, 1
+
+-- ==========================================
+-- ||      FIX Ô NHẬP SỐ (1-100 HP)        ||
+-- ==========================================
+hpInput1.FocusLost:Connect(function()
+    local val = tonumber(hpInput1.Text:match("%d+"))
+    if val then 
+        CONFIG1.EscapeHP = math.clamp(val, 1, 100) -- Giới hạn 1-100
+        hpInput1.Text = "Set Escape HP: " .. CONFIG1.EscapeHP
+    else
+        hpInput1.Text = "Set Escape HP: " .. CONFIG1.EscapeHP
+    end
+end)
+
+targetInput1.FocusLost:Connect(function()
+    local val = tonumber(targetInput1.Text:match("%d+"))
+    if val then 
+        CONFIG1.TargetHP = math.clamp(val, 1, 100) -- Giới hạn 1-100
+        targetInput1.Text = "Set Target HP: " .. CONFIG1.TargetHP
+    else
+        targetInput1.Text = "Set Target HP: " .. CONFIG1.TargetHP
+    end
+end)
 
 -- ==========================================
 -- ||      LOGIC HITBOX TỐI ĐA             ||
@@ -141,25 +170,43 @@ function updateList2()
 end
 
 -- ==========================================
--- ||      HỆ THỐNG CORE (GIỮ NGUYÊN)      ||
+-- ||      HỆ THỐNG CORE & KILL TRACK      ||
 -- ==========================================
+local deadEnemies = {}
+
 local function applyTargetESP()
     for _, enemy in pairs(game.Players:GetPlayers()) do
         if enemy ~= p and enemy.Character then
             local eHum = enemy.Character:FindFirstChild("Humanoid")
             local eHead = enemy.Character:FindFirstChild("Head")
-            if eHum and eHead and eHum.Health > 0 then
+            if eHum and eHead then
                 local enemyHPPercent = math.floor((eHum.Health / eHum.MaxHealth) * 100)
-                if enemyHPPercent <= 30 then
-                    local hl = enemy.Character:FindFirstChild("klunz_Xray") or Instance.new("Highlight", enemy.Character)
-                    hl.Name = "klunz_Xray"; hl.FillColor = Color3.fromRGB(255, 0, 0); hl.FillTransparency = 0.4; hl.Enabled = true
-                    local bgui = eHead:FindFirstChild("klunz_HP_Tag") or Instance.new("BillboardGui", eHead)
-                    bgui.Name = "klunz_HP_Tag"; bgui.Size, bgui.AlwaysOnTop = UDim2.new(0, 50, 0, 20), true; bgui.ExtentsOffset = Vector3.new(0, 3, 0)
-                    local txt = bgui:FindFirstChild("TextLabel") or Instance.new("TextLabel", bgui)
-                    txt.Size, txt.BackgroundTransparency = UDim2.new(1, 0, 1, 0), 1; txt.Text = enemyHPPercent .. "%"; txt.TextColor3, txt.Font, txt.TextSize = Color3.fromRGB(255, 0, 0), Enum.Font.Code, 18; txt.TextStrokeTransparency = 0
-                else
+                
+                -- LOGIC ĐẾM KILL
+                if eHum.Health <= 0 then
+                    -- Nếu địch chết và đang bị đánh dấu ESP
+                    if not deadEnemies[enemy] and enemy.Character:FindFirstChild("klunz_Xray") then
+                        deadEnemies[enemy] = true
+                        killsStat.Value = killsStat.Value + 1
+                    end
+                    -- Xóa ESP khi chết
                     if enemy.Character:FindFirstChild("klunz_Xray") then enemy.Character.klunz_Xray.Enabled = false end
                     if eHead:FindFirstChild("klunz_HP_Tag") then eHead.klunz_HP_Tag:Destroy() end
+                else
+                    deadEnemies[enemy] = false -- Reset khi địch hồi sinh
+                    
+                    -- CHUẨN HÓA % MÁU THEO CONFIG TỪ 1 ĐẾN 100
+                    if enemyHPPercent > 0 and enemyHPPercent <= CONFIG1.TargetHP then
+                        local hl = enemy.Character:FindFirstChild("klunz_Xray") or Instance.new("Highlight", enemy.Character)
+                        hl.Name = "klunz_Xray"; hl.FillColor = Color3.fromRGB(255, 0, 0); hl.FillTransparency = 0.4; hl.Enabled = true
+                        local bgui = eHead:FindFirstChild("klunz_HP_Tag") or Instance.new("BillboardGui", eHead)
+                        bgui.Name = "klunz_HP_Tag"; bgui.Size, bgui.AlwaysOnTop = UDim2.new(0, 50, 0, 20), true; bgui.ExtentsOffset = Vector3.new(0, 3, 0)
+                        local txt = bgui:FindFirstChild("TextLabel") or Instance.new("TextLabel", bgui)
+                        txt.Size, txt.BackgroundTransparency = UDim2.new(1, 0, 1, 0), 1; txt.Text = enemyHPPercent .. "%"; txt.TextColor3, txt.Font, txt.TextSize = Color3.fromRGB(255, 0, 0), Enum.Font.Code, 18; txt.TextStrokeTransparency = 0
+                    else
+                        if enemy.Character:FindFirstChild("klunz_Xray") then enemy.Character.klunz_Xray.Enabled = false end
+                        if eHead:FindFirstChild("klunz_HP_Tag") then eHead.klunz_HP_Tag:Destroy() end
+                    end
                 end
             end
         end
