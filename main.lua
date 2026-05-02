@@ -1,4 +1,4 @@
--- [[ klưn.z MASTER SYSTEM - RE-FIXED ]] --
+-- [[ klưn.z MASTER SYSTEM - FULL VERSION ]] --
 local p = game:GetService("Players").LocalPlayer
 local RS = game:GetService("RunService")
 local SG = game:GetService("StarterGui")
@@ -13,8 +13,8 @@ local activeCombat2 = false
 
 -- [[ THÔNG BÁO KHỞI TẠO ]] --
 SG:SetCore("SendNotification", {
-    Title = "★ klưn.z DOUBLE SYSTEM ★",
-    Text = "LINK GITHUB ĐÃ KẾT NỐI! 🗿",
+    Title = "★ klưn.z FULL SYSTEM ★",
+    Text = "ĐÃ KHÔI PHỤC MENU 2 & ESP ĐỎ! 🗿",
     Duration = 5
 })
 
@@ -32,22 +32,21 @@ frame1.ClipsDescendants = true; Instance.new("UICorner", frame1)
 local title1 = Instance.new("TextLabel", frame1)
 title1.Size, title1.Text = UDim2.new(1, 0, 0, 35), "★ klưn.z MASTER ★"
 title1.TextColor3, title1.BackgroundTransparency = Color3.fromRGB(0, 255, 150), 1
-title1.Font, title1.TextSize, title1.ZIndex = Enum.Font.Code, 15, 10
+title1.Font, title1.TextSize = Enum.Font.Code, 15
 
 local toggleBtn1 = Instance.new("TextButton", frame1)
 toggleBtn1.Size, toggleBtn1.Position = UDim2.new(0, 25, 0, 25), UDim2.new(1, -30, 0, 5)
 toggleBtn1.Text, toggleBtn1.BackgroundColor3 = "-", Color3.fromRGB(40,40,40)
-toggleBtn1.TextColor3, toggleBtn1.ZIndex = Color3.new(1,1,1), 100; Instance.new("UICorner", toggleBtn1)
+toggleBtn1.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", toggleBtn1)
 
 local content1 = Instance.new("Frame", frame1)
 content1.Size, content1.Position, content1.BackgroundTransparency = UDim2.new(1,0,0.9,0), UDim2.new(0,0,0.1,0), 1
-content1.ZIndex = 5
 
 local function createBtn1(text, pos, color)
     local b = Instance.new("TextButton", content1)
     b.Size, b.Position = UDim2.new(0.9,0,0.08,0), pos
     b.Text, b.BackgroundColor3, b.TextColor3, b.Font = text, color, Color3.new(1,1,1), Enum.Font.Code
-    b.TextSize, b.ZIndex = 12, 10; Instance.new("UICorner", b); return b
+    b.TextSize = 12; Instance.new("UICorner", b); return b
 end
 
 local invBtn1 = createBtn1("INVIS/HIDE NAME: OFF", UDim2.new(0.05,0,0.02,0), Color3.fromRGB(200,40,40))
@@ -135,7 +134,36 @@ function updateList2()
     end
 end
 
--- [[ LOGIC NÚT BẤM ]] --
+-- ==========================================
+-- ||      HỆ THỐNG ESP ĐỎ (% MÁU < 30)     ||
+-- ==========================================
+local function applyTargetESP()
+    for _, enemy in pairs(game.Players:GetPlayers()) do
+        if enemy ~= p and enemy.Character then
+            local eHum = enemy.Character:FindFirstChild("Humanoid")
+            local eHead = enemy.Character:FindFirstChild("Head")
+            if eHum and eHead and eHum.Health > 0 then
+                local enemyHPPercent = math.floor((eHum.Health / eHum.MaxHealth) * 100)
+                if enemyHPPercent <= 30 then
+                    local hl = enemy.Character:FindFirstChild("klunz_Xray") or Instance.new("Highlight", enemy.Character)
+                    hl.Name = "klunz_Xray"; hl.FillColor = Color3.fromRGB(255, 0, 0); hl.FillTransparency = 0.4; hl.Enabled = true
+                    local bgui = eHead:FindFirstChild("klunz_HP_Tag") or Instance.new("BillboardGui", eHead)
+                    bgui.Name = "klunz_HP_Tag"; bgui.Size, bgui.AlwaysOnTop = UDim2.new(0, 50, 0, 20), true; bgui.ExtentsOffset = Vector3.new(0, 3, 0)
+                    local txt = bgui:FindFirstChild("TextLabel") or Instance.new("TextLabel", bgui)
+                    txt.Size, txt.BackgroundTransparency = UDim2.new(1, 0, 1, 0), 1; txt.Text = enemyHPPercent .. "%"
+                    txt.TextColor3, txt.Font, txt.TextSize = Color3.fromRGB(255, 0, 0), Enum.Font.Code, 18; txt.TextStrokeTransparency = 0
+                else
+                    if enemy.Character:FindFirstChild("klunz_Xray") then enemy.Character.klunz_Xray.Enabled = false end
+                    if eHead:FindFirstChild("klunz_HP_Tag") then eHead.klunz_HP_Tag:Destroy() end
+                end
+            end
+        end
+    end
+end
+
+-- ==========================================
+-- ||      LOGIC NÚT BẤM VÀ TÀNG HÌNH      ||
+-- ==========================================
 toggleBtn1.MouseButton1Click:Connect(function()
     local isCol = (toggleBtn1.Text == "-")
     frame1:TweenSize(isCol and UDim2.new(0,210,0,35) or UDim2.new(0,210,0,420), "Out", "Quart", 0.3, true)
@@ -170,10 +198,29 @@ end)
 resetBtn2.MouseButton1Click:Connect(function() CONFIG2.SelectedTarget = nil updateList2() end)
 game.Players.PlayerAdded:Connect(updateList2); game.Players.PlayerRemoving:Connect(updateList2)
 
+local invisConn = nil
 invBtn1.MouseButton1Click:Connect(function() 
     activeInvis1 = not activeInvis1
     invBtn1.Text = activeInvis1 and "INVIS: ON" or "INVIS: OFF"
     invBtn1.BackgroundColor3 = activeInvis1 and Color3.fromRGB(0,255,150) or Color3.fromRGB(200,40,40)
+    if activeInvis1 then
+        invisConn = RS.RenderStepped:Connect(function()
+            if p.Character and activeInvis1 then
+                for _, obj in pairs(p.Character:GetDescendants()) do
+                    if obj:IsA("BasePart") or obj:IsA("Decal") then obj.Transparency = 1
+                    elseif obj:IsA("Accessory") and obj:FindFirstChild("Handle") then obj.Handle.Transparency = 1 end
+                end
+            end
+        end)
+    else
+        if invisConn then invisConn:Disconnect(); invisConn = nil end
+        if p.Character then
+            for _, obj in pairs(p.Character:GetDescendants()) do
+                if obj:IsA("BasePart") or obj:IsA("Decal") then obj.Transparency = 0
+                elseif obj:IsA("Accessory") and obj:FindFirstChild("Handle") then obj.Handle.Transparency = 0 end
+            end
+        end
+    end
 end)
 
 escToggle1.MouseButton1Click:Connect(function() 
@@ -183,22 +230,15 @@ escToggle1.MouseButton1Click:Connect(function()
     if not activeEscape1 then systemLock1 = false end
 end)
 
-hpInput1.FocusLost:Connect(function()
-    local val = tonumber(hpInput1.Text:match("%d+"))
-    if val then CONFIG1.EscapeHP = val hpInput1.Text = "Set Escape HP: "..val end
-end)
-
-targetInput1.FocusLost:Connect(function()
-    local val = tonumber(targetInput1.Text:match("%d+"))
-    if val then CONFIG1.TargetHP = val targetInput1.Text = "Set Target HP: "..val end
-end)
-
--- [[ HỆ THỐNG CORE ]] --
+-- ==========================================
+-- ||      HỆ THỐNG CORE VÀ DI CHUYỂN      ||
+-- ==========================================
 RS.Heartbeat:Connect(function()
     local char = p.Character; local root = char and char:FindFirstChild("HumanoidRootPart")
     local hum = char and char:FindFirstChild("Humanoid")
     if not (root and hum) then return end
 
+    applyTargetESP()
     hum.WalkSpeed = CONFIG1.Speed
 
     local myHP = math.floor((hum.Health / hum.MaxHealth) * 100)
@@ -229,7 +269,7 @@ RS.Heartbeat:Connect(function()
         root.CFrame = target.CFrame * CFrame.new(0, 0, 2.8)
         root.CFrame = CFrame.lookAt(root.Position, target.Position)
         Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Position + Vector3.new(0, 1, 0))
-        statusLabel1.Text = "AIMING: " .. target.Parent.Name
+        statusLabel1.Text = "TARGETING: " .. target.Parent.Name
     else
         statusLabel1.Text = (activeCombat1 or activeCombat2) and "STATUS: SEARCHING..." or "STATUS: IDLE"
     end
