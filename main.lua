@@ -19,7 +19,7 @@ SG:SetCore("SendNotification", {
 })
 
 -- ==========================================
--- ||      MENU 1 (BẢN V6 CHÍNH CHỦ)       ||
+-- ||      MENU 1 (GIỮ NGUYÊN BẢN V6)      ||
 -- ==========================================
 local gui1 = Instance.new("ScreenGui", p:WaitForChild("PlayerGui"))
 gui1.Name = "klunz_Master_V6"; gui1.ResetOnSpawn = false 
@@ -70,7 +70,7 @@ statusLabel1.Text, statusLabel1.TextColor3 = "STATUS: IDLE", Color3.new(0.7,0.7,
 statusLabel1.Font, statusLabel1.TextSize, statusLabel1.BackgroundTransparency = Enum.Font.Code, 11, 1
 
 -- ==========================================
--- ||      MENU 2 (TARGET SYSTEM)          ||
+-- ||      MENU 2 (CẬP NHẬT THANH HP%)     ||
 -- ==========================================
 local gui2 = Instance.new("ScreenGui", p:WaitForChild("PlayerGui"))
 gui2.Name = "klunz_Aimbot_Killer"; gui2.ResetOnSpawn = false
@@ -122,10 +122,25 @@ function updateList2()
     for _, pl in pairs(game.Players:GetPlayers()) do
         if pl ~= p then
             local b = Instance.new("TextButton", scroll2)
-            b.Size, b.Text = UDim2.new(1, 0, 0, 22), " " .. pl.Name
+            b.Size = UDim2.new(1, 0, 0, 22)
+            
+            -- Tính toán máu để hiển thị
+            local hpInfo = "[??%]"
+            local hpCol = Color3.fromRGB(200, 200, 200)
+            if pl.Character and pl.Character:FindFirstChild("Humanoid") then
+                local h = pl.Character.Humanoid
+                local pct = math.floor((h.Health / h.MaxHealth) * 100)
+                hpInfo = "[" .. pct .. "%]"
+                if pct <= 30 then hpCol = Color3.fromRGB(255, 0, 0)
+                elseif pct <= 70 then hpCol = Color3.fromRGB(255, 255, 0)
+                else hpCol = Color3.fromRGB(0, 255, 100) end
+            end
+
+            b.Text = " " .. hpInfo .. " " .. pl.Name
             b.BackgroundColor3 = (CONFIG2.SelectedTarget == pl) and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(25, 25, 25)
-            b.TextColor3, b.Font, b.TextSize = Color3.new(1, 1, 1), Enum.Font.Code, 8
+            b.TextColor3, b.Font, b.TextSize = hpCol, Enum.Font.Code, 8
             b.TextXAlignment = Enum.TextXAlignment.Left; Instance.new("UICorner", b)
+            
             b.MouseButton1Click:Connect(function() 
                 CONFIG2.SelectedTarget = (CONFIG2.SelectedTarget == pl) and nil or pl 
                 updateList2() 
@@ -135,8 +150,11 @@ function updateList2()
 end
 
 -- ==========================================
--- ||      HỆ THỐNG ESP ĐỎ (% MÁU < 30)     ||
+-- ||      HỆ THỐNG ESP VÀ LOGIC KHÁC      ||
 -- ==========================================
+-- (Giữ nguyên các hàm applyTargetESP, toggle events, và Heartbeat như cũ của bạn)
+-- Chú ý: Đảm bảo phần này giống hệt script gốc bạn gửi để không mất tính năng
+
 local function applyTargetESP()
     for _, enemy in pairs(game.Players:GetPlayers()) do
         if enemy ~= p and enemy.Character then
@@ -161,9 +179,6 @@ local function applyTargetESP()
     end
 end
 
--- ==========================================
--- ||      LOGIC NÚT BẤM VÀ TÀNG HÌNH      ||
--- ==========================================
 toggleBtn1.MouseButton1Click:Connect(function()
     local isCol = (toggleBtn1.Text == "-")
     frame1:TweenSize(isCol and UDim2.new(0,210,0,35) or UDim2.new(0,210,0,420), "Out", "Quart", 0.3, true)
@@ -230,9 +245,6 @@ escToggle1.MouseButton1Click:Connect(function()
     if not activeEscape1 then systemLock1 = false end
 end)
 
--- ==========================================
--- ||      HỆ THỐNG CORE VÀ DI CHUYỂN      ||
--- ==========================================
 RS.Heartbeat:Connect(function()
     local char = p.Character; local root = char and char:FindFirstChild("HumanoidRootPart")
     local hum = char and char:FindFirstChild("Humanoid")
