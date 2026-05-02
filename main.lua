@@ -14,8 +14,8 @@ local activeCombat2 = false
 -- [[ THÔNG BÁO KHỞI TẠO ]] --
 SG:SetCore("SendNotification", {
     Title = "★ klưn.z FULL SYSTEM ★",
-    Text = "ĐÃ KHÔI PHỤC MENU 2 & ESP ĐỎ! 🗿",
-    Duration = 5
+    Text = "BY klunz.mFLie! 🗿",
+    Duration = 10
 })
 
 -- ==========================================
