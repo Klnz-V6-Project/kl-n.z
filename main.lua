@@ -1,4 +1,4 @@
--- [[ klưn.z MASTER SYSTEM - KHÔ MÁU MODE & FALL FIX ]] --
+-- [[ klưn.z MASTER SYSTEM - MENU 1 CLEANED ]] --
 local p = game:GetService("Players").LocalPlayer
 local RS = game:GetService("RunService")
 local SG = game:GetService("StarterGui")
@@ -8,12 +8,12 @@ local Camera = workspace.CurrentCamera
 
 -- [[ CONFIG TỔNG HỢP ]] --
 local _S = (math.sqrt(10000)) 
-local CONFIG1 = { EscapeHP = 25, SafeHP = 75, TargetHP = 30 } 
+local CONFIG1 = { EscapeHP = 100, SafeHP = 75, TargetHP = 30 } 
 local CONFIG2 = { SelectedTarget = nil }
 
 local activeCombat1, activeEscape1, systemLock1 = false, true, false
 local activeCombat2 = false
-local KhoMauMode = false -- Biến điều khiển chế độ khô máu
+local activeMelee = false -- Chỉ còn dùng biến này cho chế độ chiến đấu đặc biệt (Menu 3)
 
 -- ==========================================
 -- ||      THANH STATUS (GÓC TRÁI)         ||
@@ -29,12 +29,36 @@ sInfo.Size, sInfo.BackgroundTransparency = UDim2.new(1, 0, 1, 0), 1
 sInfo.Text, sInfo.TextColor3, sInfo.Font, sInfo.TextSize = "STATUS: IDLE", Color3.fromRGB(0, 255, 150), Enum.Font.Code, 11
 
 -- ==========================================
--- ||      MENU 1 (FIXED A-Z)              ||
+-- ||      MENU 3 (MELEE RAGE - MINI)      ||
+-- ==========================================
+local gui3 = Instance.new("ScreenGui", p:WaitForChild("PlayerGui"))
+gui3.Name = "klunz_Melee_Mini"; gui3.ResetOnSpawn = false
+local frame3 = Instance.new("Frame", gui3)
+frame3.Size, frame3.Position = UDim2.new(0, 130, 0, 55), UDim2.new(1, -140, 0.15, 0)
+frame3.BackgroundColor3 = Color3.fromRGB(20, 10, 10); frame3.Active, frame3.Draggable = true, true; Instance.new("UICorner", frame3)
+
+local title3 = Instance.new("TextLabel", frame3)
+title3.Size = UDim2.new(1, 0, 0, 18)
+title3.Text = "🔥 MELEE RAGE"; title3.TextColor3 = Color3.fromRGB(255, 50, 50); title3.BackgroundTransparency, title3.Font, title3.TextSize = 1, Enum.Font.Code, 8
+
+local meleeBtn = Instance.new("TextButton", frame3)
+meleeBtn.Size, meleeBtn.Position = UDim2.new(0.9, 0, 0, 28), UDim2.new(0.05, 0, 0.4, 0)
+meleeBtn.Text = "RAGE: OFF"; meleeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40); meleeBtn.TextColor3, meleeBtn.Font, meleeBtn.TextSize = Color3.new(1, 1, 1), Enum.Font.Code, 9; Instance.new("UICorner", meleeBtn)
+
+meleeBtn.MouseButton1Click:Connect(function()
+    activeMelee = not activeMelee
+    meleeBtn.Text = activeMelee and "RAGE: ON 🔥" or "RAGE: OFF"
+    meleeBtn.BackgroundColor3 = activeMelee and Color3.fromRGB(200, 0, 0) or Color3.fromRGB(40, 40, 40)
+    sInfo.TextColor3 = activeMelee and Color3.fromRGB(255, 50, 50) or Color3.fromRGB(0, 255, 150)
+end)
+
+-- ==========================================
+-- ||      MENU 1 (ĐÃ XOÁ KHÔ MÁU)         ||
 -- ==========================================
 local gui1 = Instance.new("ScreenGui", p:WaitForChild("PlayerGui"))
 gui1.Name = "klunz_Master_V6"; gui1.ResetOnSpawn = false 
 local frame1 = Instance.new("Frame", gui1)
-frame1.Size, frame1.Position = UDim2.new(0,210,0,520), UDim2.new(0.1,0,0.3,0)
+frame1.Size, frame1.Position = UDim2.new(0,210,0,480), UDim2.new(0.1,0,0.3,0) -- Thu ngắn lại chút vì bớt nút
 frame1.BackgroundColor3 = Color3.fromRGB(10,10,10); frame1.Active, frame1.Draggable = true, true
 frame1.ClipsDescendants = true; Instance.new("UICorner", frame1)
 
@@ -73,34 +97,26 @@ local function createInput1(placeholder, defaultVal, callback)
     end)
 end
 
--- RENDER MENU 1 (FIXED HOP SERVER 100%)
+-- RENDER BUTTONS MENU 1 (KHÔNG CÒN KHÔ MÁU)
 createBtn1("⭐ SUPER HOP (100%)", Color3.fromRGB(0, 120, 50), function()
     sInfo.Text = "STATUS: SCANNING SV..."
     task.spawn(function()
         local success, res = pcall(function()
             return game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100")
         end)
-        
         if success then
             local data = Http:JSONDecode(res)
             local targetServer = nil
             for _, s in pairs(data.data) do
-                -- Điều kiện: Chừa ít nhất 2 chỗ trống để đảm bảo 100% vào được
                 if s.id ~= game.JobId and s.playing <= (s.maxPlayers - 2) then
-                    targetServer = s
-                    break
+                    targetServer = s; break
                 end
             end
-            
             if targetServer then
                 sInfo.Text = "STATUS: JOINING ["..targetServer.playing.."]"
                 TP:TeleportToPlaceInstance(game.PlaceId, targetServer.id, p)
-            else
-                sInfo.Text = "STATUS: NO SAFE SV!"
-            end
-        else
-            sInfo.Text = "STATUS: HTTP ERROR!"
-        end
+            else sInfo.Text = "STATUS: NO SAFE SV!" end
+        else sInfo.Text = "STATUS: HTTP ERROR!" end
     end)
 end)
 
@@ -108,19 +124,6 @@ local combatBtn1 = createBtn1("AUTO KILL (M1): OFF", Color3.fromRGB(80,80,80), f
     activeCombat1 = not activeCombat1
     b.Text = activeCombat1 and "AUTO KILL (M1): ON" or "AUTO KILL (M1): OFF"
     b.BackgroundColor3 = activeCombat1 and Color3.fromRGB(138,43,226) or Color3.fromRGB(80,80,80)
-end)
-
--- NÚT CHẾ ĐỘ KHÔ MÁU
-local khoMauBtn = createBtn1("MODE: CẬN CHIẾN", Color3.fromRGB(30,120,30), function(b)
-    KhoMauMode = not KhoMauMode
-    if KhoMauMode then
-        b.Text = "MODE: KHÔ MÁU 🔥"
-        b.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-        systemLock1 = false 
-    else
-        b.Text = "MODE: CẬN CHIẾN"
-        b.BackgroundColor3 = Color3.fromRGB(30,120,30)
-    end
 end)
 
 local escBtn1 = createBtn1("AUTO ESCAPE: ON", Color3.fromRGB(0,150,255), function(b)
@@ -164,10 +167,10 @@ function updateList2()
     end
 end
 
--- Logic Đóng mở
+-- Logic Toggle UI
 toggleBtn1.MouseButton1Click:Connect(function()
     local isCol = (toggleBtn1.Text == "-")
-    frame1:TweenSize(isCol and UDim2.new(0,210,0,35) or UDim2.new(0,210,0,520), "Out", "Quart", 0.3, true)
+    frame1:TweenSize(isCol and UDim2.new(0,210,0,35) or UDim2.new(0,210,0,480), "Out", "Quart", 0.3, true)
     content1.Visible = not isCol; toggleBtn1.Text = isCol and "+" or "-"
 end)
 
@@ -196,10 +199,10 @@ RS.Heartbeat:Connect(function(dt)
     local hum = char and char:FindFirstChild("Humanoid")
     if not (root and hum) then return end
     
-    -- Xử lý HP & Escape
     local myHP = (hum.Health / hum.MaxHealth) * 100
     
-    if activeEscape1 and not KhoMauMode then
+    -- Escape logic (Bị chặn nếu bật Melee Rage ở Menu 3)
+    if activeEscape1 and not activeMelee then
         if myHP <= CONFIG1.EscapeHP then systemLock1 = true 
         elseif myHP >= CONFIG1.SafeHP then systemLock1 = false end
     else
@@ -220,36 +223,41 @@ RS.Heartbeat:Connect(function(dt)
         if tHum and tHum.Health > 0 then target = CONFIG2.SelectedTarget.Character:FindFirstChild("HumanoidRootPart") end
     end
     
-    if not target and activeCombat1 then
+    if not target and (activeCombat1 or activeMelee) then
         local lowestHP = 101
         for _, v in pairs(game.Players:GetPlayers()) do
             if v ~= p and v.Character and v.Character:FindFirstChild("Humanoid") then
                 local eHum = v.Character.Humanoid; local eHP = (eHum.Health / eHum.MaxHealth) * 100
-                if eHP > 0 and eHP <= CONFIG1.TargetHP and eHP < lowestHP then lowestHP = eHP; target = v.Character:FindFirstChild("HumanoidRootPart") end
+                if eHP > 0 and eHP <= CONFIG1.TargetHP and eHP < lowestHP then 
+                    lowestHP = eHP; target = v.Character:FindFirstChild("HumanoidRootPart") 
+                end
             end
         end
     end
 
     if target then
-        root.CFrame = target.CFrame * CFrame.new(0, 0, 2.4) 
+        -- KHOẢNG CÁCH: Melee Rage áp sát cực gần (1.5), thường (2.4)
+        local range = activeMelee and 1.5 or 2.4
+        root.CFrame = target.CFrame * CFrame.new(0, 0, range) 
         root.CFrame = CFrame.lookAt(root.Position, target.Position)
         Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Position)
-        sInfo.Text = "TARGET: " .. target.Parent.Name
+        sInfo.Text = (activeMelee and "🔥 RAGE: " or "TARGET: ") .. target.Parent.Name
     else
-        -- SPEED ẨN
         if hum.MoveDirection.Magnitude > 0 then
             root.CFrame = root.CFrame + (hum.MoveDirection * (_S * dt))
         end
-        sInfo.Text = KhoMauMode and "STATUS: KHÔ MÁU MODE 🔥" or ((activeCombat1 or activeCombat2) and "STATUS: SCANNING..." or "STATUS: IDLE")
+        sInfo.Text = activeMelee and "STATUS: KHÔ MÁU MODE 🔥" or ((activeCombat1 or activeCombat2) and "STATUS: SCANNING..." or "STATUS: IDLE")
     end
 end)
 
 -- Attack Loop
 task.spawn(function()
-    while task.wait(0.12) do
-        if (activeCombat1 or activeCombat2) and not systemLock1 then
+    while true do
+        local speed = activeMelee and 0.08 or 0.12
+        if (activeCombat1 or activeCombat2 or activeMelee) and not systemLock1 then
             local ev = p.Character and p.Character:FindFirstChild("Communicate")
             if ev then for i = 1, 3 do ev:FireServer({[1] = i}) end end
         end
+        task.wait(speed)
     end
 end)
