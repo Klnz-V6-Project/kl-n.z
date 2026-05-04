@@ -15,7 +15,7 @@ clearOld("klunz_Status_Global"); clearOld("klunz_Melee_Mini"); clearOld("klunz_M
 
 -- [[ CONFIG TỔNG HỢP ]] --
 local _S = (math.sqrt(10000)) 
-local CONFIG1 = { EscapeHP = 100, SafeHP = 75, TargetHP = 30 }
+local CONFIG1 = { EscapeHP = 100, SafeHP = 10, TargetHP = 30 }
 local CONFIG2 = { SelectedTarget = nil }
 
 -- SỬA TẠI ĐÂY: Mặc định bật ESP ngay lập tức
