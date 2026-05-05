@@ -1,4 +1,4 @@
--- [[ klưn.z MASTER SYSTEM - ESP PERMANENT ON ]] --
+-- [[ klưn.z MASTER SYSTEM - ESP PERMANENT ON + VIPPRO HITBOX/AIM ]] --
 local p = game:GetService("Players").LocalPlayer
 local RS = game:GetService("RunService")
 local SG = game:GetService("StarterGui")
@@ -18,7 +18,10 @@ local _S = (math.sqrt(10000))
 local CONFIG1 = { EscapeHP = 100, SafeHP = 10, TargetHP = 30 }
 local CONFIG2 = { SelectedTarget = nil }
 
--- SỬA TẠI ĐÂY: Mặc định bật ESP ngay lập tức
+-- CẤU HÌNH HITBOX MỚI
+local _HITBOX_SIZE = 25 -- Chỉnh kích thước hitbox tại đây
+
+-- Mặc định bật ESP ngay lập tức
 local activeESP = true 
 local activeEscape1, systemLock1 = true, false
 local activeCombat2 = false
@@ -96,7 +99,6 @@ createBtn1("⭐ SUPER HOP", Color3.fromRGB(0, 120, 50), function()
     end
 end)
 
--- Hiển thị mặc định là ON cho nút ESP
 local espBtn = createBtn1("ESP LOW HP: ON", Color3.fromRGB(200, 0, 0), function(b)
     activeESP = not activeESP
     b.Text = activeESP and "ESP LOW HP: ON" or "ESP LOW HP: OFF"
@@ -168,30 +170,49 @@ combatBtn2.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- ||      CORE LOGIC (ESP & COMBAT)       ||
+-- || CORE LOGIC (ESP, COMBAT & HITBOX)    ||
 -- ==========================================
 RS.Heartbeat:Connect(function(dt)
     local char = p.Character; local root = char and char:FindFirstChild("HumanoidRootPart")
     local hum = char and char:FindFirstChild("Humanoid")
     if not (root and hum) then return end
 
-    -- Logic ESP (<30% HP) - Luôn chạy khi activeESP = true
+    -- Logic ESP & HITBOX
     for _, v in pairs(game.Players:GetPlayers()) do
-        if v ~= p and v.Character and v.Character:FindFirstChild("Head") then
-            local head = v.Character.Head
-            local eHum = v.Character:FindFirstChild("Humanoid")
-            local bill = head:FindFirstChild("klunz_ESP")
-            
-            if activeESP and eHum then
-                local hpP = (eHum.Health / eHum.MaxHealth) * 100
-                if hpP <= 30 and hpP > 0 then
-                    if not bill then
-                        bill = Instance.new("BillboardGui", head); bill.Name = "klunz_ESP"; bill.Size = UDim2.new(0, 80, 0, 40); bill.AlwaysOnTop = true; bill.ExtentsOffset = Vector3.new(0, 3, 0)
-                        local t = Instance.new("TextLabel", bill); t.Size = UDim2.new(1, 0, 1, 0); t.BackgroundTransparency = 1; t.TextColor3 = Color3.fromRGB(255, 50, 50); t.Font = Enum.Font.Code; t.TextSize = 10; t.TextStrokeTransparency = 0
-                    end
-                    bill.TextLabel.Text = v.Name .. "\n[" .. math.floor(hpP) .. "%]"
+        if v ~= p and v.Character then
+            -- Tích hợp ESP (<30% HP)
+            if v.Character:FindFirstChild("Head") then
+                local head = v.Character.Head
+                local eHum = v.Character:FindFirstChild("Humanoid")
+                local bill = head:FindFirstChild("klunz_ESP")
+                
+                if activeESP and eHum then
+                    local hpP = (eHum.Health / eHum.MaxHealth) * 100
+                    if hpP <= 30 and hpP > 0 then
+                        if not bill then
+                            bill = Instance.new("BillboardGui", head); bill.Name = "klunz_ESP"; bill.Size = UDim2.new(0, 80, 0, 40); bill.AlwaysOnTop = true; bill.ExtentsOffset = Vector3.new(0, 3, 0)
+                            local t = Instance.new("TextLabel", bill); t.Size = UDim2.new(1, 0, 1, 0); t.BackgroundTransparency = 1; t.TextColor3 = Color3.fromRGB(255, 50, 50); t.Font = Enum.Font.Code; t.TextSize = 10; t.TextStrokeTransparency = 0
+                        end
+                        bill.TextLabel.Text = v.Name .. "\n[" .. math.floor(hpP) .. "%]"
+                    elseif bill then bill:Destroy() end
                 elseif bill then bill:Destroy() end
-            elseif bill then bill:Destroy() end
+            end
+
+            -- Tích hợp HITBOX (Chỉ kích hoạt khi bật Melee Rage hoặc Target Lock)
+            if v.Character:FindFirstChild("HumanoidRootPart") then
+                local targetRoot = v.Character.HumanoidRootPart
+                if activeCombat2 or activeMelee then
+                    targetRoot.Size = Vector3.new(_HITBOX_SIZE, _HITBOX_SIZE, _HITBOX_SIZE)
+                    targetRoot.Transparency = 0.8
+                    targetRoot.BrickColor = BrickColor.new("Bright red")
+                    targetRoot.Material = Enum.Material.ForceField
+                    targetRoot.CanCollide = false
+                else
+                    -- Auto Reset Hitbox khi tắt
+                    targetRoot.Size = Vector3.new(2, 2, 1)
+                    targetRoot.Transparency = 1
+                end
+            end
         end
     end
 
@@ -216,9 +237,14 @@ RS.Heartbeat:Connect(function(dt)
     end
 
     if target then
+        -- Teleport áp sát mục tiêu
         root.CFrame = target.CFrame * CFrame.new(0, 0, activeMelee and 1.6 or 2.5)
-        root.CFrame = CFrame.lookAt(root.Position, target.Position)
-        Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Position)
+        
+        -- AIM SKILL VIPPRO: Khóa thẳng mặt và camera vào mục tiêu, giữ vững trục Y (không bị lộn nhào)
+        local lookPos = target.Position
+        root.CFrame = CFrame.lookAt(root.Position, Vector3.new(lookPos.X, root.Position.Y, lookPos.Z))
+        Camera.CFrame = CFrame.new(Camera.CFrame.Position, lookPos)
+        
         sInfo.Text = "TARGET: " .. target.Parent.Name
     else
         if hum.MoveDirection.Magnitude > 0 then root.CFrame = root.CFrame + (hum.MoveDirection * (_S * dt)) end
@@ -237,5 +263,4 @@ task.spawn(function()
     end
 end)
 
-SG:SetCore("SendNotification", { Title = "klưn.z MASTER", Text = "ESP ALWAYS ON!", Duration = 3 })
-
+SG:SetCore("SendNotification", { Title = "klưn.z MASTER", Text = "VIPPRO LOADED!", Duration = 3 })
